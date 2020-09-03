@@ -1,0 +1,12 @@
+contract ExampleContract =
+
+  type state = map(int, string)
+
+  stateful entrypoint init() : state =
+    {}
+
+  stateful entrypoint set(index : int, value : string) : unit =
+    put(state{[index] = value})
+
+  entrypoint get(index : int) : string =
+    state[index]
