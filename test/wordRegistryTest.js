@@ -3,6 +3,7 @@ const {readFileRelative} = require('aeproject-utils/utils/fs-utils');
 const {defaultWallets: wallets} = require('aeproject-config/config/node-config.json');
 
 const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
+const WORD_REGISTRY = readFileRelative('./contracts/WordRegistry.aes', 'utf-8');
 const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
 
@@ -12,8 +13,8 @@ const config = {
   compilerUrl: 'http://localhost:3080'
 };
 
-describe('TokenSale Contract', () => {
-  let client, contract, token;
+describe('WordRegistry Contract', () => {
+  let client, contract, token, sale;
 
   before(async () => {
     client = await Universal({
@@ -30,35 +31,28 @@ describe('TokenSale Contract', () => {
   });
 
   it('Deploy Contract', async () => {
-    contract = await client.getContractInstance(TOKEN_SALE);
+    contract = await client.getContractInstance(WORD_REGISTRY);
     const init = await contract.methods.init();
     assert.equal(init.result.returnType, 'ok');
   });
 
-  it('Deploy and set Token', async () => {
+  it('Deploy Token Sale', async () => {
+    sale = await client.getContractInstance(TOKEN_SALE);
+    const init = await sale.methods.init();
+    assert.equal(init.result.returnType, 'ok');
+  });
+
+  it('Deploy and add Token', async () => {
     token = await client.getContractInstance(TOKEN);
     const init = await token.methods.init("Test Token", 0, "TT", contract.deployInfo.address.replace('ct_', 'ak_'));
     assert.equal(init.result.returnType, 'ok');
-    const set = await contract.methods.set_token(token.deployInfo.address);
+    await sale.methods.set_token(token.deployInfo.address);
+    const set = await contract.methods.add_token(sale.deployInfo.address);
     assert.equal(set.result.returnType, 'ok');
   });
 
-  it('Buy Tokens', async () => {
-    const buy = await contract.methods.buy({amount: 2});
-    assert.equal(buy.result.returnType, 'ok');
-
-    const amount = await token.methods.balance(wallets[0].publicKey);
-    assert.equal(amount.decodedResult, 2);
-    assert.equal(await client.getBalance(contract.deployInfo.address.replace('ct_', 'ak_')), 2)
-  });
-
-  it('Sell Tokens', async () => {
-    await token.methods.create_allowance(contract.deployInfo.address.replace('ct_', 'ak_'), 1);
-    const sell = await contract.methods.sell(1);
-    assert.equal(sell.result.returnType, 'ok');
-
-    const amount = await token.methods.balance(wallets[0].publicKey);
-    assert.equal(amount.decodedResult, 1);
-    assert.equal(await client.getBalance(contract.deployInfo.address.replace('ct_', 'ak_')), 1)
+  it('Get State', async () => {
+    const state = await contract.methods.get_state();
+    assert.deepEqual(state.decodedResult, { tokens: [["TT", sale.deployInfo.address]], owner: wallets[0].publicKey});
   });
 });

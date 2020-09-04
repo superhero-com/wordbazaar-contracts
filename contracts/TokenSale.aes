@@ -7,17 +7,17 @@ contract TokenSale =
   type state = option(Token)
 
   stateful entrypoint init() : state = None
-  stateful entrypoint set_token(token : Token) = put(Some(token))
+  stateful entrypoint set_token(token : Token) : unit = put(Some(token))
 
-  payable stateful entrypoint buy() =
+  payable stateful entrypoint buy() : unit =
     get_token().mint(Call.caller, Call.value)
 
-  stateful entrypoint sell(amount : int) =
+  stateful entrypoint sell(amount : int) : unit =
     get_token().transfer_allowance(Call.caller, Contract.address, amount)
     get_token().burn(amount)
     Chain.spend(Call.caller, amount)
 
-  function get_token() : Token =
+  entrypoint get_token() : Token =
     switch(state)
       Some(token) => token
       None => abort("NO_TOKEN_SET")

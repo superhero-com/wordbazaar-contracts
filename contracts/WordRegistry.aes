@@ -1,0 +1,21 @@
+contract Token =
+  record meta_info = { name : string, symbol : string, decimals : int }
+  entrypoint meta_info : () => meta_info
+
+contract TokenSale =
+  entrypoint get_token : () => Token
+
+contract WordRegistry =
+  record state = { tokens: map(string, TokenSale)
+                 , owner : address }
+
+  stateful entrypoint init() : state =
+    { tokens = {},
+      owner = Call.caller }
+
+  stateful entrypoint add_token(token_sale : TokenSale) : unit =
+    let symbol = token_sale.get_token().meta_info().symbol
+    require(!Map.member(symbol, state.tokens), "SYMBOL_ALREADY_EXISTENT")
+    put(state{ tokens = state.tokens{ [symbol] = token_sale } })
+
+  entrypoint get_state() : state = state
