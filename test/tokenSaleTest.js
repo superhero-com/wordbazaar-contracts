@@ -5,6 +5,8 @@ const {defaultWallets: wallets} = require('aeproject-config/config/node-config.j
 const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
 const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
+const WORD_REGISTRY = readFileRelative('./contracts/WordRegistry.aes', 'utf-8');
+
 
 const config = {
   url: 'http://localhost:3001/',
@@ -13,7 +15,7 @@ const config = {
 };
 
 describe('TokenSale Contract', () => {
-  let client, contract, token;
+  let client, contract, token, registry;
 
   before(async () => {
     client = await Universal({
@@ -35,12 +37,16 @@ describe('TokenSale Contract', () => {
     assert.equal(init.result.returnType, 'ok');
   });
 
+  it('Deploy Registry', async () => {
+    registry = await client.getContractInstance(WORD_REGISTRY);
+    const init = await registry.methods.init();
+    assert.equal(init.result.returnType, 'ok');
+  });
+
   it('Deploy and set Token', async () => {
     token = await client.getContractInstance(TOKEN);
-    const init = await token.methods.init("Test Token", 0, "TT", contract.deployInfo.address.replace('ct_', 'ak_'));
+    const init = await token.methods.init("Test Token", 0, "TT", contract.deployInfo.address.replace('ct_', 'ak_'), registry.deployInfo.address);
     assert.equal(init.result.returnType, 'ok');
-    const set = await contract.methods.set_token(token.deployInfo.address);
-    assert.equal(set.result.returnType, 'ok');
   });
 
   it('Buy Tokens', async () => {

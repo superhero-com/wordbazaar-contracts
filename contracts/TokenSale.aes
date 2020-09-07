@@ -7,7 +7,7 @@ contract TokenSale =
   type state = option(Token)
 
   stateful entrypoint init() : state = None
-  stateful entrypoint set_token(token : Token) : unit = put(Some(token))
+  stateful entrypoint set_token() : unit = put(Some(Address.to_contract(Call.caller)))
 
   payable stateful entrypoint buy() : unit =
     get_token().mint(Call.caller, Call.value)
