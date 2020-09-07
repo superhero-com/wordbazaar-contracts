@@ -55,4 +55,12 @@ describe('WordRegistry Contract', () => {
     const state = await contract.methods.get_state();
     assert.deepEqual(state.decodedResult, { tokens: [["TT", sale.deployInfo.address]], owner: wallets[0].publicKey});
   });
+
+  it('Remove Token', async () => {
+    const remove = await contract.methods.remove_token("TT",);
+    assert.equal(remove.result.returnType, 'ok');
+
+    const state = await contract.methods.get_state();
+    assert.deepEqual(state.decodedResult, { tokens: [], owner: wallets[0].publicKey});
+  });
 });

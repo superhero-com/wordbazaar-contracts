@@ -18,4 +18,15 @@ contract WordRegistry =
     require(!Map.member(symbol, state.tokens), "SYMBOL_ALREADY_EXISTENT")
     put(state{ tokens = state.tokens{ [symbol] = token_sale } })
 
+  stateful entrypoint remove_token(symbol : string) : unit =
+    require_owner()
+    put(state{ tokens = Map.delete(symbol, state.tokens) })
+
+  // GETTER FUNCTIONS
+
   entrypoint get_state() : state = state
+
+  // INTERNAL FUNCTIONS
+
+  function require_owner() =
+    require(Call.caller == state.owner, "ONLY_OWNER_CALL_ALLOWED")
