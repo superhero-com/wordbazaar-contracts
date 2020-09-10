@@ -8,3 +8,6 @@ fs.writeFileSync(__dirname + '/../TokenSale.aes.js', `module.exports = \`\n${Tok
 
 const WordRegistry = fs.readFileSync(__dirname + '/../contracts/WordRegistry.aes', 'utf-8');
 fs.writeFileSync(__dirname + '/../WordRegistry.aes.js', `module.exports = \`\n${WordRegistry.replace(/`/g, "\\`")}\`;\n`, 'utf-8');
+
+const TokenVoting = fs.readFileSync(__dirname + '/../contracts/TokenVoting.aes', 'utf-8');
+fs.writeFileSync(__dirname + '/../TokenVoting.aes.js', `module.exports = \`\n${TokenVoting.replace(/`/g, "\\`")}\`;\n`, 'utf-8');
