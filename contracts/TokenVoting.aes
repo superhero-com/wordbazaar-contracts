@@ -81,7 +81,7 @@ contract Voting =
     require(Map.member(option, state.vote_options), "VOTE_OPTION_NOT_KNOWN")
     require(!Map.member(Call.caller, state.vote_accounts), "VOTER_ALREADY_VOTED")
     state.token.transfer_allowance(Call.caller, Contract.address, amount)
-    put(state{ vote_state[option] @ prev_amount = prev_amount + amount, vote_accounts[Call.caller] = (amount, option, false)})
+    put(state{ vote_state[option = 0] @ prev_amount = prev_amount + amount, vote_accounts[Call.caller] = (amount, option, false)})
     Chain.event(Vote(Call.caller, option, amount))
 
   // transfer tokens to voter keep track of state and account
