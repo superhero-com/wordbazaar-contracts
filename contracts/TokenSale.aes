@@ -3,11 +3,20 @@ contract Token =
   stateful entrypoint transfer_allowance : (address, address, int) => unit
   stateful entrypoint burn : (int) => unit
 
-contract TokenSale =
-  type state = option(Token)
+contract Vote =
+  entrypoint token : () => Token
 
-  stateful entrypoint init() : state = None
-  stateful entrypoint set_token(token : Token) : unit = put(Some(token))
+contract TokenSale =
+
+  record state =
+    { token : option(Token)
+    , votes : map(int, Vote) }
+
+  datatype event =
+    AddVote(Vote, int)
+
+  stateful entrypoint init() : state = { token = None, votes = {} }
+  stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
 
   payable stateful entrypoint buy() : unit =
     get_token().mint(Call.caller, Call.value)
@@ -17,7 +26,14 @@ contract TokenSale =
     get_token().burn(amount)
     Chain.spend(Call.caller, amount)
 
+  stateful entrypoint add_vote(vote : Vote) =
+    require(vote.token() == get_token(), "NOT_SAME_TOKEN_AS_SALE")
+    let vote_seq_id = Map.size(state.votes) + 1
+    put(state{ votes[vote_seq_id] = vote })
+    Chain.event(AddVote(vote, vote_seq_id))
+    vote_seq_id
+
   entrypoint get_token() : Token =
-    switch(state)
+    switch(state.token)
       Some(token) => token
       None => abort("NO_TOKEN_SET")

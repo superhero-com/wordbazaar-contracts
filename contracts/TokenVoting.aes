@@ -111,6 +111,8 @@ contract Voting =
 
   entrypoint metadata() : metadata = state.metadata
 
+  entrypoint token() : Token = state.token
+
   entrypoint vote_accounts() : vote_accounts = state.vote_accounts
 
   entrypoint current_vote_state() : vote_state = state.vote_state
