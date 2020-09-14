@@ -28,10 +28,12 @@ contract TokenSale =
 
   stateful entrypoint add_vote(vote : Vote) =
     require(vote.token() == get_token(), "NOT_SAME_TOKEN_AS_SALE")
-    let vote_seq_id = Map.size(state.votes) + 1
+    let vote_seq_id = Map.size(state.votes)
     put(state{ votes[vote_seq_id] = vote })
     Chain.event(AddVote(vote, vote_seq_id))
     vote_seq_id
+
+  entrypoint votes() : map(int, Vote) = state.votes
 
   entrypoint get_token() : Token =
     switch(state.token)
