@@ -5,6 +5,7 @@ const {defaultWallets: wallets} = require('aeproject-config/config/node-config.j
 const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
 const TOKEN_VOTING = readFileRelative('./contracts/TokenVoting.aes', 'utf-8');
 const TOKEN = require('aeternity-fungible-token/FungibleTokenFull.aes');
+const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 
 const config = {
   url: 'http://localhost:3001/',
@@ -53,6 +54,17 @@ describe('Token Voting Contract', () => {
     assert.equal(init.result.returnType, 'ok');
   });
 
+  it('Deploy Token Sale and add Vote', async () => {
+    sale = await client.getContractInstance(TOKEN_SALE);
+    const init = await sale.methods.init();
+    assert.equal(init.result.returnType, 'ok');
+
+    await sale.methods.set_token(token.deployInfo.address);
+
+    const addVote = await sale.methods.add_vote(contract.deployInfo.address);
+    assert.equal(addVote.result.returnType, 'ok');
+  });
+
   it('Vote', async () => {
     await token.methods.create_allowance(contract.deployInfo.address.replace('ct_', 'ak_'), 10);
     const vote = await contract.methods.vote(0, 10);
@@ -88,7 +100,6 @@ describe('Token Voting Contract', () => {
     assert.equal(tokenBalanceAccount, 80);
     const currentVoteState = (await contract.methods.current_vote_state()).decodedResult;
     assert.deepEqual(currentVoteState, [[0, 20]])
-
 
     await client.awaitHeight((await contract.methods.close_height()).decodedResult);
     const withdraw = await contract.methods.withdraw();
