@@ -63,6 +63,9 @@ describe('Token Voting Contract', () => {
 
     const addVote = await sale.methods.add_vote(contract.deployInfo.address);
     assert.equal(addVote.result.returnType, 'ok');
+
+    const votes = await sale.methods.votes();
+    assert.deepEqual(votes.decodedResult, [[0, contract.deployInfo.address]]);
   });
 
   it('Vote', async () => {
