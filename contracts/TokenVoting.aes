@@ -37,18 +37,17 @@ contract Voting =
     , link : string
     , spec_ref : option(hash) }
 
-  // available options to vote for
-  type vote_option = map(int, string)
+  type vote_option = bool
+  type amount = int
 
   // vote option to staked amount
-  type vote_state = map(int, int)
+  type vote_state = map(vote_option, amount)
 
   // voter account to staked amount, option and withdrawn state
-  type vote_accounts = map(address, (int * int * bool))
+  type vote_accounts = map(address, (amount * vote_option * bool))
 
   record state =
     { metadata : metadata
-    , vote_options : vote_option
     , close_height : int
     , create_height : int
     , vote_state : vote_state
@@ -57,15 +56,14 @@ contract Voting =
     , author : address }
 
   datatype event =
-      Vote(address, int, int)
-    | RevokeVote(address, int, int)
-    | Withdraw(address, int)
+      Vote(address, vote_option, amount)
+    | RevokeVote(address, vote_option, amount)
+    | Withdraw(address, amount)
 
-  entrypoint init(metadata : metadata, vote_options : vote_option, close_height : int, token : Token) : state =
+  entrypoint init(metadata : metadata, close_height : int, token : Token) : state =
     require(String.length(metadata.title) =< 50, "TITLE_STRING_TO_LONG")
     require(String.length(metadata.description) =< 300, "DESCRIPTION_STRING_TO_LONG")
     { metadata = metadata,
-      vote_options = vote_options,
       close_height = close_height,
       create_height = Chain.block_height,
       vote_state = {},
@@ -76,9 +74,8 @@ contract Voting =
   // STATEFUL FUNCTIONS
 
   // transfer allowance to vote contract, to lock tokens, keep track of state and account
-  stateful entrypoint vote(option : int, amount : int) =
+  stateful entrypoint vote(option : vote_option, amount : amount) =
     require(!is_closed(), "POLL_ALREADY_CLOSED")
-    require(Map.member(option, state.vote_options), "VOTE_OPTION_NOT_KNOWN")
     require(!Map.member(Call.caller, state.vote_accounts), "VOTER_ALREADY_VOTED")
     state.token.transfer_allowance(Call.caller, Contract.address, amount)
     put(state{ vote_state[option = 0] @ prev_amount = prev_amount + amount, vote_accounts[Call.caller] = (amount, option, false)})
@@ -132,7 +129,7 @@ contract Voting =
     else
       None
 
-  entrypoint voted_option(voter : address) : option(int) =
+  entrypoint voted_option(voter : address) : option(vote_option) =
    if(Map.member(voter, state.vote_accounts))
      let (_, option, _) = state.vote_accounts[voter]
      Some(option)

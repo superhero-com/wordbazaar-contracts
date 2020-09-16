@@ -47,10 +47,8 @@ describe('Token Voting Contract', () => {
       spec_ref: undefined
     };
 
-    const vote_options = {0: "Yes", 1: "No"};
-    const close_height = (await client.height()) + 15;
-
-    const init = await contract.methods.init(metadata, vote_options, close_height, token.deployInfo.address);
+    const close_height = (await client.height()) + 20;
+    const init = await contract.methods.init(metadata, close_height, token.deployInfo.address);
     assert.equal(init.result.returnType, 'ok');
   });
 
@@ -70,7 +68,7 @@ describe('Token Voting Contract', () => {
 
   it('Vote', async () => {
     await token.methods.create_allowance(contract.deployInfo.address.replace('ct_', 'ak_'), 10);
-    const vote = await contract.methods.vote(0, 10);
+    const vote = await contract.methods.vote(true, 10);
     assert.equal(vote.result.returnType, 'ok');
 
     const tokenBalanceContract = (await token.methods.balance(contract.deployInfo.address.replace('ct_', 'ak_'))).decodedResult;
@@ -78,7 +76,7 @@ describe('Token Voting Contract', () => {
     const tokenBalanceAccount = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccount, 90);
     const currentVoteState = (await contract.methods.current_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteState, [[0, 10]])
+    assert.deepEqual(currentVoteState, [[true, 10]])
   });
 
   it('Revoke Vote', async () => {
@@ -90,19 +88,19 @@ describe('Token Voting Contract', () => {
     const tokenBalanceAccount = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccount, 100);
     const currentVoteState = (await contract.methods.current_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteState, [[0, 0]])
+    assert.deepEqual(currentVoteState, [[true, 0]])
   });
 
   it('Withdraw', async () => {
     await token.methods.change_allowance(contract.deployInfo.address.replace('ct_', 'ak_'), 20);
-    const vote = await contract.methods.vote(0, 20);
+    const vote = await contract.methods.vote(true, 20);
     assert.equal(vote.result.returnType, 'ok');
     const tokenBalanceContract = (await token.methods.balance(contract.deployInfo.address.replace('ct_', 'ak_'))).decodedResult;
     assert.equal(tokenBalanceContract, 20);
     const tokenBalanceAccount = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccount, 80);
     const currentVoteState = (await contract.methods.current_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteState, [[0, 20]])
+    assert.deepEqual(currentVoteState, [[true, 20]])
 
     await client.awaitHeight((await contract.methods.close_height()).decodedResult);
     const withdraw = await contract.methods.withdraw();
@@ -113,7 +111,7 @@ describe('Token Voting Contract', () => {
     const tokenBalanceAccountAfter = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccountAfter, 100);
     const currentVoteStateAfter = (await contract.methods.final_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteStateAfter, [[0, 20]])
+    assert.deepEqual(currentVoteStateAfter, [[true, 20]])
   });
 
 });
