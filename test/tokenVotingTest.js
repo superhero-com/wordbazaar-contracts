@@ -41,13 +41,12 @@ describe('Token Voting Contract', () => {
     contract = await client.getContractInstance(TOKEN_VOTING);
 
     const metadata = {
-      title: "Testing",
+      subject: {"VotePayout": [wallets[1].publicKey]},
       description: "This Poll is created for Testing purposes only",
-      link: "https://aeternity.com/",
-      spec_ref: undefined
+      link: "https://aeternity.com/"
     };
 
-    const close_height = (await client.height()) + 20;
+    const close_height = (await client.height()) + 30;
     const init = await contract.methods.init(metadata, close_height, token.deployInfo.address);
     assert.equal(init.result.returnType, 'ok');
   });

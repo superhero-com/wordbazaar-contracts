@@ -31,11 +31,13 @@ contract Token =
 // vote accounts keeps track of each voters balance for later withdrawl
 contract Voting =
 
+  datatype subject =
+    VotePayout(address)
+
   record metadata =
-    { title : string
+    { subject : subject
     , description : string
-    , link : string
-    , spec_ref : option(hash) }
+    , link : string }
 
   type vote_option = bool
   type amount = int
@@ -61,7 +63,6 @@ contract Voting =
     | Withdraw(address, amount)
 
   entrypoint init(metadata : metadata, close_height : int, token : Token) : state =
-    require(String.length(metadata.title) =< 50, "TITLE_STRING_TO_LONG")
     require(String.length(metadata.description) =< 300, "DESCRIPTION_STRING_TO_LONG")
     { metadata = metadata,
       close_height = close_height,
@@ -107,6 +108,8 @@ contract Voting =
   entrypoint close_height() : int = state.close_height
 
   entrypoint metadata() : metadata = state.metadata
+
+  entrypoint subject() : subject = state.metadata.subject
 
   entrypoint token() : Token = state.token
 
