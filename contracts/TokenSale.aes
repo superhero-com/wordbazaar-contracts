@@ -4,16 +4,13 @@ contract Token =
   stateful entrypoint burn : (int) => unit
 
 contract Vote =
-  datatype subject =
-    VotePayout(address)
-
   type vote_option = bool
   type amount = int
   type vote_state = map(vote_option, amount)
 
   entrypoint token : () => Token
   entrypoint final_vote_state : () => option(vote_state)
-  entrypoint subject : () => subject
+  entrypoint subject_workaround : () => (string * address)
 
 contract TokenSale =
 
@@ -24,8 +21,6 @@ contract TokenSale =
 
   datatype event =
     AddVote(Vote, int)
-
-  type subject = Vote.subject
 
   stateful entrypoint init() : state = { token = None, votes = {}, spread = 0 }
   stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
@@ -49,14 +44,15 @@ contract TokenSale =
 
   stateful entrypoint apply_vote_subject(vote_seq_id : int) =
     let vote = state.votes[vote_seq_id]
-    let apply_subject = () => switch(vote.subject())
-      VotePayout(receiver) =>
+    let apply_subject = () =>
+      let (subject, receiver) = vote.subject_workaround()
+      if(subject == "VotePayout")
         Chain.spend(receiver, state.spread)
         put(state{ spread = 0 })
 
     switch(vote.final_vote_state())
       None => abort("VOTE_NOT_YET_FINAL")
-      Some(vote_state) => if(vote_state[true] > vote_state[false]) apply_subject() else ()
+      Some(vote_state) => if(vote_state[true] > vote_state[false]) apply_subject()
 
   entrypoint votes() : map(int, Vote) = state.votes
   entrypoint spread() : int = state.spread
