@@ -44,21 +44,32 @@ describe('TokenSale Contract', () => {
   });
 
   it('Buy Tokens', async () => {
-    const buy = await contract.methods.buy({amount: 2});
+    const buy = await contract.methods.buy({amount: 21});
     assert.equal(buy.result.returnType, 'ok');
 
     const amount = await token.methods.balance(wallets[0].publicKey);
-    assert.equal(amount.decodedResult, 2);
-    assert.equal(await client.getBalance(contract.deployInfo.address.replace('ct_', 'ak_')), 2)
+    assert.equal(amount.decodedResult, 21)
+    assert.equal(await client.getBalance(contract.deployInfo.address.replace('ct_', 'ak_')), 21)
   });
 
   it('Sell Tokens', async () => {
-    await token.methods.create_allowance(contract.deployInfo.address.replace('ct_', 'ak_'), 1);
-    const sell = await contract.methods.sell(1);
+    await token.methods.create_allowance(contract.deployInfo.address.replace('ct_', 'ak_'), 11);
+    const sell = await contract.methods.sell(11);
     assert.equal(sell.result.returnType, 'ok');
 
     const amount = await token.methods.balance(wallets[0].publicKey);
-    assert.equal(amount.decodedResult, 1);
-    assert.equal(await client.getBalance(contract.deployInfo.address.replace('ct_', 'ak_')), 1)
+    assert.equal(amount.decodedResult, 10);
+    assert.equal(await client.getBalance(contract.deployInfo.address.replace('ct_', 'ak_')), 10 + 6)
+
+  });
+
+  it('Spread', async () => {
+    const buy = await contract.methods.buy({amount: 10});
+    assert.equal(buy.result.returnType, 'ok');
+
+    assert.equal(await client.getBalance(contract.deployInfo.address.replace('ct_', 'ak_')), 10 + 10 + 6)
+
+    const spread = await contract.methods.spread();
+    assert.equal(spread.decodedResult, 6);
   });
 });
