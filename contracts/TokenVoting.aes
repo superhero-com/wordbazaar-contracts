@@ -111,6 +111,10 @@ contract Voting =
 
   entrypoint subject() : subject = state.metadata.subject
 
+  entrypoint subject_workaround() : (string * address) =
+    switch(state.metadata.subject)
+      VotePayout(receiver) => ("VotePayout", receiver)
+
   entrypoint token() : Token = state.token
 
   entrypoint vote_accounts() : vote_accounts = state.vote_accounts
