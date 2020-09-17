@@ -25,6 +25,8 @@ contract TokenSale =
   datatype event =
     AddVote(Vote, int)
 
+  type subject = Vote.subject
+
   stateful entrypoint init() : state = { token = None, votes = {}, spread = 0 }
   stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
 
@@ -36,7 +38,7 @@ contract TokenSale =
     get_token().burn(amount)
     let half = amount / 2
     Chain.spend(Call.caller, half)
-    put(state{spread @ s = s + (amount - half) })
+    put(state{ spread @ s = s + (amount - half) })
 
   stateful entrypoint add_vote(vote : Vote) =
     require(vote.token() == get_token(), "NOT_SAME_TOKEN_AS_SALE")
@@ -46,8 +48,15 @@ contract TokenSale =
     vote_seq_id
 
   stateful entrypoint apply_vote_subject(vote_seq_id : int) =
-    vote_seq_id
-    //TODO if vote finished paybout accumulated spread to subject account
+    let vote = state.votes[vote_seq_id]
+    let apply_subject = () => switch(vote.subject())
+      VotePayout(receiver) =>
+        Chain.spend(receiver, state.spread)
+        put(state{ spread = 0 })
+
+    switch(vote.final_vote_state())
+      None => abort("VOTE_NOT_YET_FINAL")
+      Some(vote_state) => if(vote_state[true] > vote_state[false]) apply_subject() else ()
 
   entrypoint votes() : map(int, Vote) = state.votes
   entrypoint spread() : int = state.spread

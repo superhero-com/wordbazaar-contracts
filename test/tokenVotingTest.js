@@ -113,4 +113,8 @@ describe('Token Voting Contract', () => {
     assert.deepEqual(currentVoteStateAfter, [[true, 20]])
   });
 
+  it('Token Sale apply vote subject', async () => {
+    const applyVoteSubject = await sale.methods.apply_vote_subject(0);
+    assert.equal(applyVoteSubject.result.returnType, 'ok');
+  });
 });
