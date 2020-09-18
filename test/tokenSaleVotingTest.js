@@ -1,3 +1,4 @@
+const BigNumber = require('bignumber.js');
 const assert = require('chai').assert
 const {readFileRelative} = require('aeproject-utils/utils/fs-utils');
 const {defaultWallets: wallets} = require('aeproject-config/config/node-config.json');
@@ -48,7 +49,7 @@ describe('Token- Sale and Voting Contracts', () => {
     voting = await client.getContractInstance(TOKEN_VOTING);
 
     const metadata = {
-      subject: {"VotePayout": [wallets[1].publicKey]},
+      subject: {"VotePayout": [wallets[2].publicKey]},
       description: "This Poll is created for Testing purposes only",
       link: "https://aeternity.com/"
     };
@@ -109,7 +110,7 @@ describe('Token- Sale and Voting Contracts', () => {
     const tokenBalanceAccount = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccount, 90);
     const currentVoteState = (await voting.methods.current_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteState, [[true, 10]])
+    assert.deepEqual(currentVoteState, [[false, 0], [true, 10]])
   });
 
   it('Revoke Vote', async () => {
@@ -121,7 +122,7 @@ describe('Token- Sale and Voting Contracts', () => {
     const tokenBalanceAccount = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccount, 100);
     const currentVoteState = (await voting.methods.current_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteState, [[true, 0]])
+    assert.deepEqual(currentVoteState, [[false, 0], [true, 0]])
   });
 
   it('Withdraw', async () => {
@@ -133,7 +134,7 @@ describe('Token- Sale and Voting Contracts', () => {
     const tokenBalanceAccount = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccount, 80);
     const currentVoteState = (await voting.methods.current_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteState, [[true, 20]])
+    assert.deepEqual(currentVoteState, [[false, 0], [true, 20]])
 
     await client.awaitHeight((await voting.methods.close_height()).decodedResult);
     const withdraw = await voting.methods.withdraw();
@@ -144,6 +145,17 @@ describe('Token- Sale and Voting Contracts', () => {
     const tokenBalanceAccountAfter = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccountAfter, 100);
     const currentVoteStateAfter = (await voting.methods.final_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteStateAfter, [[true, 20]])
+    assert.deepEqual(currentVoteStateAfter, [[false, 0], [true, 20]])
+  });
+
+  it('Apply vote subject in Sale', async () => {
+    const balanceBefore = await client.getBalance(wallets[2].publicKey);
+    const applyVoteSubject = await sale.methods.apply_vote_subject(0);
+    assert.equal(applyVoteSubject.result.returnType, 'ok');
+
+    const balanceAfter = await client.getBalance(wallets[2].publicKey);
+    assert.equal(new BigNumber(balanceAfter).toFixed(), new BigNumber(balanceBefore).plus(6).toFixed());
+
+    assert.equal((await sale.methods.spread()).decodedResult, 0);
   });
 });
