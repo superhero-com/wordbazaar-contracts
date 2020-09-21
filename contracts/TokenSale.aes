@@ -62,6 +62,7 @@ contract TokenSale =
     Chain.event(AddVote(vote, vote_seq_id))
     vote_seq_id
 
+  // TODO only allow applying once
   stateful entrypoint apply_vote_subject(vote_seq_id : int) =
     let vote = state.votes[vote_seq_id]
     let apply_subject = () =>
