@@ -74,7 +74,6 @@ contract Voting =
 
   // STATEFUL FUNCTIONS
 
-  // TODO consider to allow to update vote option
   // transfer allowance to vote contract, to lock tokens, keep track of state and account
   stateful entrypoint vote(option : vote_option, amount : amount) =
     require(!is_closed(), "POLL_ALREADY_CLOSED")

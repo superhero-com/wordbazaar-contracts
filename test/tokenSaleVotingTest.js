@@ -33,7 +33,7 @@ describe('Token- Sale and Voting Contracts', () => {
 
   it('Deploy Token Sale', async () => {
     sale = await client.getContractInstance(TOKEN_SALE);
-    const init = await sale.methods.init();
+    const init = await sale.methods.init(20);
     assert.equal(init.result.returnType, 'ok');
   });
 
@@ -64,7 +64,7 @@ describe('Token- Sale and Voting Contracts', () => {
     assert.equal(addVote.result.returnType, 'ok');
 
     const votes = await sale.methods.votes();
-    assert.deepEqual(votes.decodedResult, [[0, voting.deployInfo.address]]);
+    assert.deepEqual(votes.decodedResult, [[0, [false, voting.deployInfo.address]]]);
   })
 
   it('Buy Tokens', async () => {
@@ -157,5 +157,11 @@ describe('Token- Sale and Voting Contracts', () => {
     assert.equal(new BigNumber(balanceAfter).toFixed(), new BigNumber(balanceBefore).plus(6).toFixed());
 
     assert.equal((await sale.methods.spread()).decodedResult, 0);
+
+    const votes = await sale.methods.votes();
+    assert.deepEqual(votes.decodedResult, [[0, [true, voting.deployInfo.address]]]);
   });
+
+  //TODO test negative case vote already applied
+  //TODO test negative vote timeout
 });
