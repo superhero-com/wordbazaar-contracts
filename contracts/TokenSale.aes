@@ -31,18 +31,20 @@ contract Vote =
   entrypoint token : () => Token
   entrypoint final_vote_state : () => option(vote_state)
   entrypoint subject_workaround : () => (string * address)
+  entrypoint close_height : () => int
 
 contract TokenSale =
 
   record state =
     { token : option(Token)
-    , votes : map(int, Vote)
-    , spread : int }
+    , votes : map(int, (bool * Vote))
+    , spread : int
+    , vote_timeout : int }
 
   datatype event =
     AddVote(Vote, int)
 
-  stateful entrypoint init() : state = { token = None, votes = {}, spread = 0 }
+  stateful entrypoint init(vote_timeout : int) : state = { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout }
   stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
 
   payable stateful entrypoint buy() : unit =
@@ -58,24 +60,25 @@ contract TokenSale =
   stateful entrypoint add_vote(vote : Vote) =
     require(vote.token() == get_token(), "NOT_SAME_TOKEN_AS_SALE")
     let vote_seq_id = Map.size(state.votes)
-    put(state{ votes[vote_seq_id] = vote })
+    put(state{ votes[vote_seq_id] = (false, vote) })
     Chain.event(AddVote(vote, vote_seq_id))
     vote_seq_id
 
-  // TODO only allow applying once
   stateful entrypoint apply_vote_subject(vote_seq_id : int) =
-    let vote = state.votes[vote_seq_id]
+    let (applied, vote) = state.votes[vote_seq_id]
+    require(!applied, "VOTE_ALREADY_APPLIED")
+    require(vote.close_height() + state.vote_timeout >= Chain.block_height, "VOTE_RESULT_TIMEOUTED")
     let apply_subject = () =>
       let (subject, receiver) = vote.subject_workaround()
       if(subject == "VotePayout")
         Chain.spend(receiver, state.spread)
-        put(state{ spread = 0 })
+        put(state{ spread = 0, votes[vote_seq_id] = (true, vote) })
 
     switch(vote.final_vote_state())
       None => abort("VOTE_NOT_YET_FINAL")
       Some(vote_state) => if(vote_state[true] > vote_state[false]) apply_subject()
 
-  entrypoint votes() : map(int, Vote) = state.votes
+  entrypoint votes() : map(int, (bool * Vote)) = state.votes
   entrypoint spread() : int = state.spread
 
   entrypoint get_token() : Token =

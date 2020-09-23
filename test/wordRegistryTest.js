@@ -38,7 +38,7 @@ describe('WordRegistry Contract', () => {
 
   it('Deploy Token Sale', async () => {
     sale = await client.getContractInstance(TOKEN_SALE);
-    const init = await sale.methods.init();
+    const init = await sale.methods.init(20);
     assert.equal(init.result.returnType, 'ok');
   });
 
