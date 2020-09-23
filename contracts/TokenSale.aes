@@ -80,6 +80,7 @@ contract TokenSale =
 
   entrypoint votes() : map(int, (bool * Vote)) = state.votes
   entrypoint spread() : int = state.spread
+  entrypoint vote_timeout() : int = state.vote_timeout
 
   entrypoint get_token() : Token =
     switch(state.token)
