@@ -48,12 +48,12 @@ contract TokenSale =
   stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
 
   payable stateful entrypoint buy() : unit =
-    get_token().mint(Call.caller, Call.value)
+    get_token().mint(Call.caller, Call.value / buy_price())
 
   stateful entrypoint sell(amount : int) : unit =
     get_token().transfer_allowance(Call.caller, Contract.address, amount)
     get_token().burn(amount)
-    let half = amount / 2
+    let half = amount / sell_price()
     Chain.spend(Call.caller, half)
     put(state{ spread @ s = s + (amount - half) })
 
@@ -77,6 +77,10 @@ contract TokenSale =
     switch(vote.final_vote_state())
       None => abort("VOTE_NOT_YET_FINAL")
       Some(vote_state) => if(vote_state[true] > vote_state[false]) apply_subject()
+
+  function buy_price() : int = 1
+  function sell_price() : int = 2
+  entrypoint prices() : (int * int) = (buy_price(), sell_price())
 
   entrypoint votes() : map(int, (bool * Vote)) = state.votes
   entrypoint spread() : int = state.spread
