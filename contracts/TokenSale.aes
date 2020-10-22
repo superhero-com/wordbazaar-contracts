@@ -53,7 +53,10 @@ contract TokenSale =
     AddVote(Vote, int)
 
   stateful entrypoint init(vote_timeout : int, bonding_curve : BondingCurve) : state =
-   { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout, bonding_curve = bonding_curve }
+    // TODO uncomment for correct timeout check, or remove timeout parameter
+    // require(vote_timeout == (60 / 3) * 24 * 7, "INCORRECT_VOTE_TIMEOUT")
+    { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout, bonding_curve = bonding_curve }
+
   stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
 
   payable stateful entrypoint buy() : unit =

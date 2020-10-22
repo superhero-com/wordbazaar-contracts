@@ -64,6 +64,8 @@ contract Voting =
 
   entrypoint init(metadata : metadata, close_height : int, token : Token) : state =
     require(String.length(metadata.description) =< 300, "DESCRIPTION_STRING_TO_LONG")
+    // TODO uncomment for correct runtime check or remove close_height parameter
+    // require(close_height - Chain.block_height == (60 / 3) * 24 * 7 * 2, "CLOSE_HEIGHT_TO_SHORT")
     { metadata = metadata,
       close_height = close_height,
       create_height = Chain.block_height,
