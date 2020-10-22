@@ -33,29 +33,37 @@ contract Vote =
   entrypoint subject_workaround : () => (string * address)
   entrypoint close_height : () => int
 
+contract BondingCurve =
+  entrypoint buy_price : () => int
+  entrypoint sell_price : () => int
+  entrypoint calculate_buy_return : (int) => int
+  entrypoint calculate_sell_return : (int) => int
+
 contract TokenSale =
 
   record state =
     { token : option(Token)
     , votes : map(int, (bool * Vote))
     , spread : int
-    , vote_timeout : int }
+    , vote_timeout : int
+    , bonding_curve : BondingCurve }
 
   datatype event =
     AddVote(Vote, int)
 
-  stateful entrypoint init(vote_timeout : int) : state = { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout }
+  stateful entrypoint init(vote_timeout : int, bonding_curve : BondingCurve) : state =
+   { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout, bonding_curve = bonding_curve }
   stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
 
   payable stateful entrypoint buy() : unit =
-    get_token().mint(Call.caller, Call.value / buy_price())
+    get_token().mint(Call.caller, state.bonding_curve.calculate_buy_return(Call.value))
 
   stateful entrypoint sell(amount : int) : unit =
     get_token().transfer_allowance(Call.caller, Contract.address, amount)
     get_token().burn(amount)
-    let half = amount / sell_price()
-    Chain.spend(Call.caller, half)
-    put(state{ spread @ s = s + (amount - half) })
+    let return = state.bonding_curve.calculate_sell_return(amount)
+    Chain.spend(Call.caller, return)
+    put(state{ spread @ s = s + (amount - return) })
 
   stateful entrypoint add_vote(vote : Vote) =
     require(vote.token() == get_token(), "NOT_SAME_TOKEN_AS_SALE")
@@ -78,9 +86,7 @@ contract TokenSale =
       None => abort("VOTE_NOT_YET_FINAL")
       Some(vote_state) => if(vote_state[true] > vote_state[false]) apply_subject()
 
-  function buy_price() : int = 1
-  function sell_price() : int = 2
-  entrypoint prices() : (int * int) = (buy_price(), sell_price())
+  entrypoint prices() : (int * int) = (state.bonding_curve.buy_price(), state.bonding_curve.sell_price())
 
   entrypoint votes() : map(int, (bool * Vote)) = state.votes
   entrypoint spread() : int = state.spread
