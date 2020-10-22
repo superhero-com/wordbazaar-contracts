@@ -132,17 +132,17 @@ describe('Token- Sale and Voting Contracts', () => {
   });
 
   it('Withdraw', async () => {
-    await token.methods.change_allowance(voting.deployInfo.address.replace('ct_', 'ak_'), 20);
-    const vote = await voting.methods.vote(true, 20);
+    await token.methods.change_allowance(voting.deployInfo.address.replace('ct_', 'ak_'), 70);
+    const vote = await voting.methods.vote(true, 70);
     assert.equal(vote.result.returnType, 'ok');
     const tokenBalanceContract = (await token.methods.balance(voting.deployInfo.address.replace('ct_', 'ak_'))).decodedResult;
-    assert.equal(tokenBalanceContract, 20);
+    assert.equal(tokenBalanceContract, 70);
     const tokenBalanceAccount = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
-    assert.equal(tokenBalanceAccount, 80);
+    assert.equal(tokenBalanceAccount, 30);
     const currentVoteState = (await voting.methods.current_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteState, [[false, 0], [true, 20]])
+    assert.deepEqual(currentVoteState, [[false, 0], [true, 70]])
 
-    await client.awaitHeight((await voting.methods.close_height()).decodedResult);
+    await client.awaitHeight((await voting.methods.close_height()).decodedResult, {attempts: 100});
     const withdraw = await voting.methods.withdraw();
     assert.equal(withdraw.result.returnType, 'ok');
 
@@ -151,7 +151,7 @@ describe('Token- Sale and Voting Contracts', () => {
     const tokenBalanceAccountAfter = (await token.methods.balance(wallets[0].publicKey)).decodedResult;
     assert.equal(tokenBalanceAccountAfter, 100);
     const currentVoteStateAfter = (await voting.methods.final_vote_state()).decodedResult;
-    assert.deepEqual(currentVoteStateAfter, [[false, 0], [true, 20]])
+    assert.deepEqual(currentVoteStateAfter, [[false, 0], [true, 70]])
   });
 
   it('Apply vote subject in Sale', async () => {
@@ -169,5 +169,6 @@ describe('Token- Sale and Voting Contracts', () => {
   });
 
   //TODO test negative case vote already applied
+  //TODO test negative case less than 50% stake
   //TODO test negative vote timeout
 });
