@@ -22,6 +22,7 @@ contract Token =
   stateful entrypoint mint : (address, int) => unit
   stateful entrypoint transfer_allowance : (address, address, int) => unit
   stateful entrypoint burn : (int) => unit
+  stateful entrypoint total_supply : () => int
 
 contract Vote =
   type vote_option = bool
@@ -84,7 +85,10 @@ contract TokenSale =
 
     switch(vote.final_vote_state())
       None => abort("VOTE_NOT_YET_FINAL")
-      Some(vote_state) => if(vote_state[true] > vote_state[false]) apply_subject()
+      Some(vote_state) =>
+        require(vote_state[true] > vote_state[false], "GREATER_50_PERCENT_AGREEMENT_REQUIRED")
+        require(vote_state[true] > get_token().total_supply() / 2, "GREATER_50_PERCENT_STAKE_REQUIRED")
+        apply_subject()
 
   entrypoint prices() : (int * int) = (state.bonding_curve.buy_price(), state.bonding_curve.sell_price())
 
