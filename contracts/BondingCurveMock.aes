@@ -1,0 +1,7 @@
+@compiler >=4.2
+
+contract BondingCurve =
+  entrypoint buy_price() = 1
+  entrypoint sell_price() = 2
+  entrypoint calculate_buy_return(amount_ae : int) = amount_ae / buy_price()
+  entrypoint calculate_sell_return(amount_tokens : int) = amount_tokens / sell_price()

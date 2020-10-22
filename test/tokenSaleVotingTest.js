@@ -7,6 +7,7 @@ const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
 const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
 const TOKEN_VOTING = readFileRelative('./contracts/TokenVoting.aes', 'utf-8');
+const BONDING_CURVE = readFileRelative('./contracts/BondingCurveMock.aes', 'utf-8');
 
 const config = {
   url: 'http://localhost:3001/',
@@ -15,7 +16,7 @@ const config = {
 };
 
 describe('Token- Sale and Voting Contracts', () => {
-  let client, sale, voting, token;
+  let client, sale, voting, token, bondingCurve;
 
   before(async () => {
     client = await Universal({
@@ -31,9 +32,14 @@ describe('Token- Sale and Voting Contracts', () => {
     });
   });
 
+  it('Deploy Bonding Curve', async () => {
+    bondingCurve = await client.getContractInstance(BONDING_CURVE);
+    const init = await bondingCurve.methods.init();
+    assert.equal(init.result.returnType, 'ok');
+  });
   it('Deploy Token Sale', async () => {
     sale = await client.getContractInstance(TOKEN_SALE);
-    const init = await sale.methods.init(20);
+    const init = await sale.methods.init(20, bondingCurve.deployInfo.address);
     assert.equal(init.result.returnType, 'ok');
   });
 

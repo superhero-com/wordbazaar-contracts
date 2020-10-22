@@ -11,3 +11,6 @@ fs.writeFileSync(__dirname + '/../WordRegistry.aes.js', `module.exports = \`\n${
 
 const TokenVoting = fs.readFileSync(__dirname + '/../contracts/TokenVoting.aes', 'utf-8');
 fs.writeFileSync(__dirname + '/../TokenVoting.aes.js', `module.exports = \`\n${TokenVoting.replace(/`/g, "\\`")}\`;\n`, 'utf-8');
+
+const BondingCurveMock = fs.readFileSync(__dirname + '/../contracts/BondingCurveMock.aes', 'utf-8');
+fs.writeFileSync(__dirname + '/../BondingCurveMock.aes.js', `module.exports = \`\n${BondingCurveMock.replace(/`/g, "\\`")}\`;\n`, 'utf-8');
