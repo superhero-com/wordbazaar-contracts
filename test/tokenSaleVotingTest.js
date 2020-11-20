@@ -39,7 +39,7 @@ describe('Token- Sale and Voting Contracts', () => {
   });
   it('Deploy Token Sale', async () => {
     sale = await client.getContractInstance(TOKEN_SALE);
-    const init = await sale.methods.init(20, bondingCurve.deployInfo.address);
+    const init = await sale.methods.init(20, bondingCurve.deployInfo.address, "description");
     assert.equal(init.result.returnType, 'ok');
   });
 

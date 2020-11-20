@@ -47,15 +47,16 @@ contract TokenSale =
     , votes : map(int, (bool * Vote))
     , spread : int
     , vote_timeout : int
-    , bonding_curve : BondingCurve }
+    , bonding_curve : BondingCurve
+    , description : string }
 
   datatype event =
     AddVote(Vote, int)
 
-  stateful entrypoint init(vote_timeout : int, bonding_curve : BondingCurve) : state =
+  stateful entrypoint init(vote_timeout : int, bonding_curve : BondingCurve, description : string) : state =
     // TODO uncomment for correct timeout check, or remove timeout parameter
     // require(vote_timeout == (60 / 3) * 24 * 7, "INCORRECT_VOTE_TIMEOUT")
-    { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout, bonding_curve = bonding_curve }
+    { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout, bonding_curve = bonding_curve, description = description }
 
   stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
 
