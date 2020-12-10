@@ -7,7 +7,7 @@ const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
 const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
 const TOKEN_VOTING = readFileRelative('./contracts/TokenVoting.aes', 'utf-8');
-const BONDING_CURVE = readFileRelative('./contracts/BondingCurveMock.aes', 'utf-8');
+const BONDING_CURVE = require('sophia-bonding-curve/BondCurveLinear.aes')
 
 const config = {
   url: 'http://localhost:3001/',
@@ -74,38 +74,44 @@ describe('Token- Sale and Voting Contracts', () => {
   })
 
   it('Buy Tokens', async () => {
-    const buy = await sale.methods.buy({amount: 21});
+    const buyValue = await sale.methods.calculate_buy_price(5);
+    assert.equal(buyValue.decodedResult, 18)
+
+    const buy = await sale.methods.buy(5, {amount: buyValue.decodedResult});
     assert.equal(buy.result.returnType, 'ok');
 
     const amount = await token.methods.balance(wallets[0].publicKey);
-    assert.equal(amount.decodedResult, 21)
-    assert.equal(await client.getBalance(sale.deployInfo.address.replace('ct_', 'ak_')), 21)
+    assert.equal(amount.decodedResult, 5)
+    assert.equal(await client.getBalance(sale.deployInfo.address.replace('ct_', 'ak_')), 18)
   });
 
   it('Sell Tokens', async () => {
-    await token.methods.create_allowance(sale.deployInfo.address.replace('ct_', 'ak_'), 11);
-    const sell = await sale.methods.sell(11);
+    await token.methods.create_allowance(sale.deployInfo.address.replace('ct_', 'ak_'), 4);
+    const sell = await sale.methods.sell(4);
     assert.equal(sell.result.returnType, 'ok');
 
     const amount = await token.methods.balance(wallets[0].publicKey);
-    assert.equal(amount.decodedResult, 10);
-    assert.equal(await client.getBalance(sale.deployInfo.address.replace('ct_', 'ak_')), 10 + 6)
-
+    assert.equal(amount.decodedResult, 1);
+    assert.equal(await client.getBalance(sale.deployInfo.address.replace('ct_', 'ak_')), 6)
   });
 
   it('Spread', async () => {
-    const buy = await sale.methods.buy({amount: 10});
+    const buyValue = await sale.methods.calculate_buy_price(5);
+    const buy = await sale.methods.buy(5, {amount: buyValue.decodedResult});
     assert.equal(buy.result.returnType, 'ok');
 
-    assert.equal(await client.getBalance(sale.deployInfo.address.replace('ct_', 'ak_')), 10 + 10 + 6)
+    assert.equal(await client.getBalance(sale.deployInfo.address.replace('ct_', 'ak_')), 29)
 
     const spread = await sale.methods.spread();
-    assert.equal(spread.decodedResult, 6);
+    assert.equal(spread.decodedResult, 11);
   });
 
   it('Vote', async () => {
     // prepare to have 100 tokens for later tests
-    await sale.methods.buy({amount: 100 - (await token.methods.balance(wallets[0].publicKey)).decodedResult});
+    const buyAmount = 100 - (await token.methods.balance(wallets[0].publicKey)).decodedResult
+    const buyValue = await sale.methods.calculate_buy_price(buyAmount);
+
+    await sale.methods.buy(buyAmount, {amount: buyValue.decodedResult});
 
     await token.methods.create_allowance(voting.deployInfo.address.replace('ct_', 'ak_'), 10);
     const vote = await voting.methods.vote(true, 10);
@@ -156,11 +162,15 @@ describe('Token- Sale and Voting Contracts', () => {
 
   it('Apply vote subject in Sale', async () => {
     const balanceBefore = await client.getBalance(wallets[2].publicKey);
+
+    const expectedSpread = await client.getBalance(sale.deployInfo.address.replace('ct_', 'ak_')) - (await sale.methods.calculate_sell_return(100)).decodedResult
+    assert.equal(expectedSpread, 105);
+
     const applyVoteSubject = await sale.methods.apply_vote_subject(0);
     assert.equal(applyVoteSubject.result.returnType, 'ok');
 
     const balanceAfter = await client.getBalance(wallets[2].publicKey);
-    assert.equal(new BigNumber(balanceAfter).toFixed(), new BigNumber(balanceBefore).plus(6).toFixed());
+    assert.equal(new BigNumber(balanceAfter).toFixed(), new BigNumber(balanceBefore).plus(expectedSpread).toFixed());
 
     assert.equal((await sale.methods.spread()).decodedResult, 0);
 
