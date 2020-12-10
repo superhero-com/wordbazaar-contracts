@@ -6,7 +6,7 @@ const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
 const WORD_REGISTRY = readFileRelative('./contracts/WordRegistry.aes', 'utf-8');
 const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
-const BONDING_CURVE = readFileRelative('./contracts/BondingCurveMock.aes', 'utf-8');
+const BONDING_CURVE = require('sophia-bonding-curve/BondCurveLinear.aes')
 
 const config = {
   url: 'http://localhost:3001/',
