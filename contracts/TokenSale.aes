@@ -104,7 +104,9 @@ contract TokenSale =
         apply_subject()
 
   entrypoint prices() : (int * int) =
-    (state.bonding_curve.buy_price(get_token().total_supply()), state.bonding_curve.sell_price(get_token().total_supply()))
+    let decimals = 1
+    let sell_price = if(get_token().total_supply() < decimals) 0 else calculate_sell_return(decimals)
+    (calculate_buy_price(decimals), sell_price)
 
   entrypoint votes() : map(int, (bool * Vote)) = state.votes
   entrypoint spread() : int = state.spread
