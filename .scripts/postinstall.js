@@ -11,3 +11,7 @@ fs.writeFileSync(__dirname + '/../WordRegistry.aes.js', `module.exports = \`\n${
 
 const TokenVoting = fs.readFileSync(__dirname + '/../contracts/TokenVoting.aes', 'utf-8');
 fs.writeFileSync(__dirname + '/../TokenVoting.aes.js', `module.exports = \`\n${TokenVoting.replace(/`/g, "\\`")}\`;\n`, 'utf-8');
+
+
+const TokenSaleInterface = fs.readFileSync(__dirname + '/../contracts/interfaces/TokenSaleInterface.aes', 'utf-8');
+fs.writeFileSync(__dirname + '/../TokenSaleInterface.aes.js', `module.exports = \`\n${TokenSaleInterface.replace(/`/g, "\\`")}\`;\n`, 'utf-8');

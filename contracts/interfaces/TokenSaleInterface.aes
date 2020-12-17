@@ -1,0 +1,33 @@
+// dummy for remote contract as not needed in more detail for interface use
+contract Token =
+  type dummy = int
+
+contract Vote =
+  type dummy = int
+
+contract BondingCurve =
+  type dummy = int
+
+contract TokenSale =
+
+  record state =
+    { token : option(Token)
+    , votes : map(int, (bool * Vote))
+    , spread : int
+    , vote_timeout : int
+    , bonding_curve : BondingCurve
+    , description : string }
+
+  stateful entrypoint set_token : (Token) => unit
+  entrypoint calculate_buy_price : (int) => int
+  payable stateful entrypoint buy : (int) => unit
+  entrypoint calculate_sell_return : (int) => int
+  stateful entrypoint sell : (int) => unit
+  stateful entrypoint add_vote : (Vote) => int
+  stateful entrypoint apply_vote_subject : (int) => unit
+  entrypoint prices : () => (int * int)
+  entrypoint votes : () => map(int, (bool * Vote))
+  entrypoint spread : () => int
+  entrypoint vote_timeout : () => int
+  entrypoint get_state : () => state
+  entrypoint get_token : () => Token
