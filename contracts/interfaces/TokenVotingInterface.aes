@@ -1,0 +1,46 @@
+// dummy for remote contract as not needed in more detail for interface use
+contract Token =
+  type dummy = int
+
+contract Voting =
+
+  datatype subject =
+    VotePayout(address)
+
+  record metadata =
+    { subject : subject
+    , description : string
+    , link : string }
+
+  type vote_option = bool
+  type amount = int
+
+  type vote_state = map(vote_option, amount)
+  type vote_accounts = map(address, (amount * vote_option * bool))
+
+  record state =
+    { metadata : metadata
+    , close_height : int
+    , create_height : int
+    , vote_state : vote_state
+    , vote_accounts : vote_accounts
+    , token : Token
+    , author : address }
+
+  stateful entrypoint vote : (vote_option, amount) => unit
+  stateful entrypoint revoke_vote : () => unit
+  stateful entrypoint withdraw : () => unit
+  entrypoint get_state : () => state
+  entrypoint close_height : () => int
+  entrypoint metadata : () => metadata
+  entrypoint subject : () => subject
+  entrypoint subject_workaround : () => (string * address)
+  entrypoint token : () => Token
+  entrypoint vote_accounts : () => vote_accounts
+  entrypoint current_vote_state : () => vote_state
+  entrypoint has_voted : (address) => bool
+  entrypoint has_withdrawn : (address) => option(bool)
+  entrypoint final_vote_state : () => option(vote_state)
+  entrypoint voted_option : (address) => option(vote_option)
+  entrypoint is_closed : () => bool
+  entrypoint version: () => int
