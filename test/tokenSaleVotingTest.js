@@ -5,6 +5,7 @@ const {defaultWallets: wallets} = require('aeproject-config/config/node-config.j
 
 const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
 const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
+const TOKEN_SALE_INTERFACE = readFileRelative('./contracts/interfaces/TokenSaleInterface.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
 const TOKEN_VOTING = readFileRelative('./contracts/TokenVoting.aes', 'utf-8');
 const BONDING_CURVE = require('sophia-bonding-curve/BondCurveLinear.aes')
@@ -176,6 +177,12 @@ describe('Token- Sale and Voting Contracts', () => {
 
     const votes = await sale.methods.votes();
     assert.deepEqual(votes.decodedResult, [[0, [true, voting.deployInfo.address]]]);
+  });
+
+  it('Check Interface', async () => {
+    const saleInterface = await client.getContractInstance(TOKEN_SALE_INTERFACE, {contractAddress: sale.deployInfo.address});
+    const state = await saleInterface.methods.get_state();
+    assert.equal(state.result.returnType, 'ok');
   });
 
   //TODO test negative case vote already applied
