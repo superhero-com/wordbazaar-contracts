@@ -8,6 +8,7 @@ const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 const TOKEN_SALE_INTERFACE = readFileRelative('./contracts/interfaces/TokenSaleInterface.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
 const TOKEN_VOTING = readFileRelative('./contracts/TokenVoting.aes', 'utf-8');
+const TOKEN_VOTING_INTERFACE = readFileRelative('./contracts/interfaces/TokenVotingInterface.aes', 'utf-8');
 const BONDING_CURVE = require('sophia-bonding-curve/BondCurveLinear.aes')
 
 const config = {
@@ -181,8 +182,12 @@ describe('Token- Sale and Voting Contracts', () => {
 
   it('Check Interface', async () => {
     const saleInterface = await client.getContractInstance(TOKEN_SALE_INTERFACE, {contractAddress: sale.deployInfo.address});
-    const state = await saleInterface.methods.get_state();
-    assert.equal(state.result.returnType, 'ok');
+    const saleState = await saleInterface.methods.get_state();
+    assert.equal(saleState.result.returnType, 'ok');
+
+    const votingInterface = await client.getContractInstance(TOKEN_VOTING_INTERFACE, {contractAddress: voting.deployInfo.address});
+    const votingState = await votingInterface.methods.get_state();
+    assert.equal(votingState.result.returnType, 'ok');
   });
 
   //TODO test negative case vote already applied
