@@ -4,6 +4,7 @@ const {defaultWallets: wallets} = require('aeproject-config/config/node-config.j
 
 const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
 const WORD_REGISTRY = readFileRelative('./contracts/WordRegistry.aes', 'utf-8');
+const WORD_REGISTRY_INTERFACE = readFileRelative('./contracts/interfaces/WordRegistryInterface.aes', 'utf-8');
 const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
 const BONDING_CURVE = require('sophia-bonding-curve/BondCurveLinear.aes')
@@ -69,5 +70,11 @@ describe('WordRegistry Contract', () => {
 
     const state = await contract.methods.get_state();
     assert.deepEqual(state.decodedResult, { tokens: [], owner: wallets[0].publicKey});
+  });
+
+  it('Check Interface', async () => {
+    const registryInterface = await client.getContractInstance(WORD_REGISTRY_INTERFACE, {contractAddress: contract.deployInfo.address});
+    const registryState = await registryInterface.methods.get_state();
+    assert.equal(registryState.result.returnType, 'ok');
   });
 });

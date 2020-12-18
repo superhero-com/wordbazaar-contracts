@@ -1,0 +1,11 @@
+// dummy for remote contract as not needed in more detail for interface use
+contract TokenSale =
+  type dummy = int
+
+contract WordRegistry =
+  record state = { tokens: map(string, TokenSale)
+                 , owner : address }
+
+  stateful entrypoint add_token : (TokenSale) => unit
+  stateful entrypoint remove_token : (string) => unit
+  entrypoint get_state : () => state
