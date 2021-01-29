@@ -4,6 +4,9 @@ const {readFileRelative} = require('aeproject-utils/utils/fs-utils');
 const {defaultWallets: wallets} = require('aeproject-config/config/node-config.json');
 
 const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
+const requireESM = require('esm')(module); // use to handle es6 import/export
+const {decodeEvents, SOPHIA_TYPES} = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
+
 const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
 const TOKEN_SALE_INTERFACE = readFileRelative('./contracts/interfaces/TokenSaleInterface.aes', 'utf-8');
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
@@ -33,6 +36,12 @@ describe('Token- Sale and Voting Contracts', () => {
       compilerUrl: config.compilerUrl
     });
   });
+
+  const eventsSchema = [
+    {name: 'AddVote', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int]},
+    {name: 'Buy', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int]},
+    {name: 'Sell', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int]}
+  ];
 
   it('Deploy Bonding Curve', async () => {
     bondingCurve = await client.getContractInstance(BONDING_CURVE);
@@ -71,6 +80,10 @@ describe('Token- Sale and Voting Contracts', () => {
     const addVote = await sale.methods.add_vote(voting.deployInfo.address);
     assert.equal(addVote.result.returnType, 'ok');
 
+    const decodedEvents = decodeEvents(addVote.txData.log, {schema: eventsSchema});
+    assert.equal(`ct_${decodedEvents[0].decoded[0]}`, voting.deployInfo.address);
+    assert.equal(decodedEvents[0].decoded[1], 0);
+
     const votes = await sale.methods.votes();
     assert.deepEqual(votes.decodedResult, [[0, [false, voting.deployInfo.address]]]);
   })
@@ -82,6 +95,11 @@ describe('Token- Sale and Voting Contracts', () => {
     const buy = await sale.methods.buy(5, {amount: buyValue.decodedResult});
     assert.equal(buy.result.returnType, 'ok');
 
+    const decodedEvents = decodeEvents(buy.txData.log, {schema: eventsSchema});
+    assert.equal(`ak_${decodedEvents[0].decoded[0]}`, wallets[0].publicKey);
+    assert.equal(decodedEvents[0].decoded[1], buyValue.decodedResult);
+    assert.equal(decodedEvents[0].decoded[2], 5);
+
     const amount = await token.methods.balance(wallets[0].publicKey);
     assert.equal(amount.decodedResult, 5)
     assert.equal(await client.getBalance(sale.deployInfo.address.replace('ct_', 'ak_')), 18)
@@ -91,6 +109,11 @@ describe('Token- Sale and Voting Contracts', () => {
     await token.methods.create_allowance(sale.deployInfo.address.replace('ct_', 'ak_'), 4);
     const sell = await sale.methods.sell(4);
     assert.equal(sell.result.returnType, 'ok');
+
+    const decodedEvents = decodeEvents(sell.txData.log, {schema: eventsSchema});
+    assert.equal(`ak_${decodedEvents[0].decoded[0]}`, wallets[0].publicKey);
+    assert.equal(decodedEvents[0].decoded[1], 12);
+    assert.equal(decodedEvents[0].decoded[2], 4);
 
     const amount = await token.methods.balance(wallets[0].publicKey);
     assert.equal(amount.decodedResult, 1);
