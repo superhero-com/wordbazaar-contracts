@@ -60,7 +60,9 @@ contract TokenSale =
     // require(vote_timeout == (60 / 3) * 24 * 7, "INCORRECT_VOTE_TIMEOUT")
     { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout, bonding_curve = bonding_curve, description = description }
 
-  stateful entrypoint set_token(token : Token) : unit = put(state{ token = Some(token) })
+  stateful entrypoint set_token(token : Token) : unit =
+    require(!has_token(), "TOKEN_ALREADY_SET")
+    put(state{ token = Some(token) })
 
   entrypoint calculate_buy_price(amount : int) : int =
     state.bonding_curve.calculate_buy_price(get_token().total_supply(), amount)
@@ -121,3 +123,8 @@ contract TokenSale =
     switch(state.token)
       Some(token) => token
       None => abort("NO_TOKEN_SET")
+
+  entrypoint has_token() : bool =
+    switch(state.token)
+      Some(token) => true
+      None => false
