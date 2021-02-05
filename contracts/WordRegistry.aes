@@ -33,8 +33,7 @@ contract WordRegistry =
     { tokens = {},
       owner = Call.caller }
 
-  stateful entrypoint add_token(token_sale : TokenSale) : unit =
-    let symbol = token_sale.get_token().meta_info().symbol
+  stateful entrypoint add_token(token_sale : TokenSale, symbol : string) : unit =
     require(!Map.member(symbol, state.tokens), "SYMBOL_ALREADY_EXISTENT")
     put(state{ tokens = state.tokens{ [symbol] = token_sale } })
 

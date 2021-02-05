@@ -52,11 +52,8 @@ describe('WordRegistry Contract', () => {
 
   it('Deploy and add Token', async () => {
     token = await client.getContractInstance(TOKEN);
-    const init = await token.methods.init("Test Token", 0, "TT", contract.deployInfo.address.replace('ct_', 'ak_'));
+    const init = await token.methods.init("Test Token", 0, "TT", sale.deployInfo.address, contract.deployInfo.address);
     assert.equal(init.result.returnType, 'ok');
-    await sale.methods.set_token(token.deployInfo.address);
-    const set = await contract.methods.add_token(sale.deployInfo.address);
-    assert.equal(set.result.returnType, 'ok');
   });
 
   it('Get State', async () => {

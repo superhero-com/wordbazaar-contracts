@@ -60,7 +60,8 @@ contract TokenSale =
     // require(vote_timeout == (60 / 3) * 24 * 7, "INCORRECT_VOTE_TIMEOUT")
     { token = None, votes = {}, spread = 0, vote_timeout = vote_timeout, bonding_curve = bonding_curve, description = description }
 
-  stateful entrypoint set_token(token : Token) : unit =
+  stateful entrypoint set_token() : unit =
+    let token : Token = Address.to_contract(Call.caller)
     require(!has_token(), "TOKEN_ALREADY_SET")
     put(state{ token = Some(token) })
 

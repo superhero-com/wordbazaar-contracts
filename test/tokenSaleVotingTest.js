@@ -12,6 +12,7 @@ const TOKEN_SALE_INTERFACE = readFileRelative('./contracts/interfaces/TokenSaleI
 const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
 const TOKEN_VOTING = readFileRelative('./contracts/TokenVoting.aes', 'utf-8');
 const TOKEN_VOTING_INTERFACE = readFileRelative('./contracts/interfaces/TokenVotingInterface.aes', 'utf-8');
+const WORD_REGISTRY = readFileRelative('./contracts/WordRegistry.aes', 'utf-8');
 const BONDING_CURVE = require('sophia-bonding-curve/BondCurveLinear.aes')
 
 const config = {
@@ -21,7 +22,7 @@ const config = {
 };
 
 describe('Token- Sale and Voting Contracts', () => {
-  let client, sale, voting, token, bondingCurve;
+  let client, sale, voting, token, registry, bondingCurve;
 
   before(async () => {
     client = await Universal({
@@ -54,12 +55,16 @@ describe('Token- Sale and Voting Contracts', () => {
     assert.equal(init.result.returnType, 'ok');
   });
 
+  it('Deploy Registry', async () => {
+    registry = await client.getContractInstance(WORD_REGISTRY);
+    const init = await registry.methods.init();
+    assert.equal(init.result.returnType, 'ok');
+  });
+
   it('Deploy and set Token', async () => {
     token = await client.getContractInstance(TOKEN);
-    const init = await token.methods.init("Test Token", 0, "TT", sale.deployInfo.address.replace('ct_', 'ak_'));
+    const init = await token.methods.init("Test Token", 0, "TT", sale.deployInfo.address, registry.deployInfo.address);
     assert.equal(init.result.returnType, 'ok');
-    const set = await sale.methods.set_token(token.deployInfo.address);
-    assert.equal(set.result.returnType, 'ok');
   });
 
   it('Deploy Voting Contract', async () => {
