@@ -20,6 +20,12 @@
 
 @compiler >= 4
 
+contract TokenSale =
+  stateful entrypoint set_token : () => unit
+
+contract WordRegistry =
+  stateful entrypoint add_token : (TokenSale, string) => unit
+
 include "Option.aes"
 
 /// @title - Fungible token with all the extensions - burn, mint, allowances
@@ -64,7 +70,7 @@ contract FungibleTokenFull =
   // Create a fungible token with
   // the following `name` `symbol` and `decimals`
   // and set the inital smart contract state
-  entrypoint init(name: string, decimals : int, symbol : string, owner : address) =
+  entrypoint init(name: string, decimals : int, symbol : string, token_sale : TokenSale, word_registry : WordRegistry) =
     // If the `name` lenght is less than 1 symbol abort the execution
     require(String.length(name) >= 1, "STRING_TOO_SHORT_NAME")
     // If the `symbol` length is less than 1 symbol abort the execution
@@ -72,7 +78,9 @@ contract FungibleTokenFull =
     // If the provided value for `decimals` is negative abort the execution
     require_non_negative_value(decimals)
 
-    { owner        = owner,
+    token_sale.set_token()
+    word_registry.add_token(token_sale, symbol)
+    { owner        = token_sale.address,
       total_supply = 0,
       balances     = {},
       meta_info    = { name = name, symbol = symbol, decimals = decimals },
