@@ -10,8 +10,8 @@ const deploy = async () => {
   };
 
   const keypair = {
-    secretKey: '',
-    publicKey: ''
+    secretKey: '8fe6f2b3eaee2cc675de41cc8f5c22fad204b740611e8b8593524ce356eb2ab5c5127b909da4e7eddec87a2f22dea0cd56e9168fdb9f98cccd0adda77e741dd2',
+    publicKey: 'ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT'
   };
 
   const client = await Universal({

@@ -18,13 +18,15 @@
 // THIS IS NOT SECURITY AUDITED
 // DO NEVER USE THIS WITHOUT SECURITY AUDIT FIRST
 
-contract Token =
+@compiler >= 6
+
+contract interface Token =
   stateful entrypoint mint : (address, int) => unit
   stateful entrypoint transfer_allowance : (address, address, int) => unit
   stateful entrypoint burn : (int) => unit
   stateful entrypoint total_supply : () => int
 
-contract Vote =
+contract interface Vote =
   type vote_option = bool
   type amount = int
   type vote_state = map(vote_option, amount)
@@ -34,13 +36,13 @@ contract Vote =
   entrypoint subject_workaround : () => (string * address)
   entrypoint close_height : () => int
 
-contract BondingCurve =
+contract interface BondingCurve =
   entrypoint buy_price : (int) => int
   entrypoint sell_price : (int) => int
   entrypoint calculate_buy_price : (int, int) => int
   entrypoint calculate_sell_return : (int, int) => int
 
-contract TokenSale =
+main contract TokenSale =
 
   record state =
     { token : option(Token)
