@@ -10,17 +10,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aeternity-fungible-token": "github:mradkov/aeternity-fungible-token",
-    "sophia-bonding-curve": "github:mradkov/BondingCurve",
-    "@aeternity/aepp-sdk": "^7.7.0",
-    "aeproject-config": "^2.2.0",
-    "aeproject-utils": "^2.2.0",
-    "aeproject-lib": "^2.2.0",
+    "sophia-bonding-curve": "github:aeternity/BondingCurve#1.0.0-alpha.2",
+    "@aeternity/aepp-sdk": "8.1.0",
     "bignumber.js": "^9.0.0",
     "esm": "^3.2.25",
-    "chai": "^4.2.0"
+    "prompts": "^2.4.1"
   },
   "devDependencies": {
-    "mocha": "^8.1.3"
+    "chai": "^4.3.4",
+    "mocha": "^8.4.0"
   }
 }

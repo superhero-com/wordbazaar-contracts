@@ -1,18 +1,18 @@
+const fs = require('fs');
 const BigNumber = require('bignumber.js');
 const assert = require('chai').assert
-const {readFileRelative} = require('aeproject-utils/utils/fs-utils');
-const {defaultWallets: wallets} = require('aeproject-config/config/node-config.json');
+const {defaultWallets: wallets} = require('../config/wallets.json');
 
 const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
 const requireESM = require('esm')(module); // use to handle es6 import/export
 const {decodeEvents, SOPHIA_TYPES} = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
-const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
-const TOKEN_SALE_INTERFACE = readFileRelative('./contracts/interfaces/TokenSaleInterface.aes', 'utf-8');
-const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
-const TOKEN_VOTING = readFileRelative('./contracts/TokenVoting.aes', 'utf-8');
-const TOKEN_VOTING_INTERFACE = readFileRelative('./contracts/interfaces/TokenVotingInterface.aes', 'utf-8');
-const WORD_REGISTRY = readFileRelative('./contracts/WordRegistry.aes', 'utf-8');
+const TOKEN_SALE = fs.readFileSync('./contracts/TokenSale.aes', 'utf-8');
+const TOKEN_SALE_INTERFACE = fs.readFileSync('./contracts/interfaces/TokenSaleInterface.aes', 'utf-8');
+const TOKEN = fs.readFileSync('./contracts/FungibleTokenCustom.aes', 'utf-8');
+const TOKEN_VOTING = fs.readFileSync('./contracts/TokenVoting.aes', 'utf-8');
+const TOKEN_VOTING_INTERFACE = fs.readFileSync('./contracts/interfaces/TokenVotingInterface.aes', 'utf-8');
+const WORD_REGISTRY = fs.readFileSync('./contracts/WordRegistry.aes', 'utf-8');
 const BONDING_CURVE = require('sophia-bonding-curve/BondCurveLinear.aes')
 
 const config = {
@@ -45,10 +45,11 @@ describe('Token- Sale and Voting Contracts', () => {
   ];
 
   it('Deploy Bonding Curve', async () => {
-    bondingCurve = await client.getContractInstance(BONDING_CURVE);
+    bondingCurve = await client.getContractInstance(BONDING_CURVE).catch(console.error);
     const init = await bondingCurve.methods.init();
     assert.equal(init.result.returnType, 'ok');
   });
+
   it('Deploy Token Sale', async () => {
     sale = await client.getContractInstance(TOKEN_SALE);
     const init = await sale.methods.init(20, bondingCurve.deployInfo.address, "description");

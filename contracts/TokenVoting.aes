@@ -18,7 +18,11 @@
 // THIS IS NOT SECURITY AUDITED
 // DO NEVER USE THIS WITHOUT SECURITY AUDIT FIRST
 
-contract Token =
+@compiler >= 6
+
+include "String.aes"
+
+contract interface Token =
   stateful entrypoint transfer_allowance : (address, address, int) => unit
   stateful entrypoint transfer : (address, int) => unit
 
@@ -29,7 +33,7 @@ contract Token =
 // when closing height is reached voters can withdraw tokens without affecting state
 // vote state keeps track if changing state with token balance being locked
 // vote accounts keeps track of each voters balance for later withdrawl
-contract Voting =
+main contract Voting =
 
   datatype subject =
     VotePayout(address)
