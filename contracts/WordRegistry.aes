@@ -18,14 +18,16 @@
 // THIS IS NOT SECURITY AUDITED
 // DO NEVER USE THIS WITHOUT SECURITY AUDIT FIRST
 
-contract Token =
+@compiler >= 6
+
+contract interface Token =
   record meta_info = { name : string, symbol : string, decimals : int }
   entrypoint meta_info : () => meta_info
 
-contract TokenSale =
+contract interface TokenSale =
   entrypoint get_token : () => Token
 
-contract WordRegistry =
+main contract WordRegistry =
   record state = { tokens: map(string, TokenSale)
                  , owner : address }
 

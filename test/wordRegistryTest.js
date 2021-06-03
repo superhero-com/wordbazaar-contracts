@@ -1,12 +1,12 @@
+const fs = require('fs');
 const assert = require('chai').assert
-const {readFileRelative} = require('aeproject-utils/utils/fs-utils');
-const {defaultWallets: wallets} = require('aeproject-config/config/node-config.json');
+const {defaultWallets: wallets} = require('../config/wallets.json');
 
 const {Universal, MemoryAccount, Node} = require('@aeternity/aepp-sdk');
-const WORD_REGISTRY = readFileRelative('./contracts/WordRegistry.aes', 'utf-8');
-const WORD_REGISTRY_INTERFACE = readFileRelative('./contracts/interfaces/WordRegistryInterface.aes', 'utf-8');
-const TOKEN_SALE = readFileRelative('./contracts/TokenSale.aes', 'utf-8');
-const TOKEN = readFileRelative('./contracts/FungibleTokenCustom.aes', 'utf-8');
+const WORD_REGISTRY = fs.readFileSync('./contracts/WordRegistry.aes', 'utf-8');
+const WORD_REGISTRY_INTERFACE = fs.readFileSync('./contracts/interfaces/WordRegistryInterface.aes', 'utf-8');
+const TOKEN_SALE = fs.readFileSync('./contracts/TokenSale.aes', 'utf-8');
+const TOKEN = fs.readFileSync('./contracts/FungibleTokenCustom.aes', 'utf-8');
 const BONDING_CURVE = require('sophia-bonding-curve/BondCurveLinear.aes')
 
 const config = {

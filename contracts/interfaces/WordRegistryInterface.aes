@@ -1,8 +1,10 @@
+@compiler >= 6
+
 // dummy for remote contract as not needed in more detail for interface use
-contract TokenSale =
+contract interface TokenSale =
   type dummy = int
 
-contract WordRegistry =
+main contract WordRegistry =
   record state = { tokens: map(string, TokenSale)
                  , owner : address }
 

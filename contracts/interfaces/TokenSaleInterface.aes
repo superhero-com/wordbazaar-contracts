@@ -1,14 +1,18 @@
+@compiler >= 6
+
 // dummy for remote contract as not needed in more detail for interface use
-contract Token =
+contract interface Token =
   type dummy = int
 
-contract Vote =
+// dummy for remote contract as not needed in more detail for interface use
+contract interface Vote =
   type dummy = int
 
-contract BondingCurve =
+// dummy for remote contract as not needed in more detail for interface use
+contract interface BondingCurve =
   type dummy = int
 
-contract TokenSale =
+main contract TokenSale =
 
   record state =
     { token : option(Token)

@@ -1,8 +1,10 @@
+@compiler >= 6
+
 // dummy for remote contract as not needed in more detail for interface use
-contract Token =
+contract interface Token =
   type dummy = int
 
-contract Voting =
+main contract Voting =
 
   datatype subject =
     VotePayout(address)
