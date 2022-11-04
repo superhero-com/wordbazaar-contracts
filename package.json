@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sophia-bonding-curve": "github:aeternity/BondingCurve#1.0.0-alpha.2",
+    "sophia-bonding-curve": "git+https://git@github.com/aeternity/BondingCurve#1.0.0-alpha.2",
     "@aeternity/aepp-sdk": "8.1.0",
     "bignumber.js": "^9.0.0",
     "esm": "^3.2.25",
